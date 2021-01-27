@@ -1,4 +1,4 @@
-use std::{env, net};
+use std::{borrow::Borrow, net};
 
 extern crate mavlink;
 extern crate clap;
@@ -6,6 +6,8 @@ use clap::{
     App,
     Arg
 };
+
+use crate::connection_builder;
 
 fn main() {
     println!("Hello, world!");
@@ -27,6 +29,28 @@ fn main() {
                                 .long("logging")
                                 .help("Sets if logging will be used to record all messages passed")
                         ).get_matches();
-    
-    println!("Arguments: {:?}", args);
+
+    let ports: Vec<&str> = args
+        .value_of("Ports")
+        .unwrap()
+        .split(",")
+        .collect();
+
+    for port in ports {
+        println!("Port: {}", port);
+        let port_info = port.split(":");
+        if port_info.clone().count() != (3 as usize) {
+            println!("Invalid port given! Port: {}", port);
+            continue;
+        }
+        let port_info_vec: Vec<&str> = port_info.collect();
+
+        match port_info_vec[0] {
+            "tcpin" => println!("TCP Server!"),
+            "tcpout" => println!("TCP Connection!"),
+            "udp" => println!("UDP Connection!"),
+            _ => println!("Unexpected port type!")
+        }
+    }
+
 }
