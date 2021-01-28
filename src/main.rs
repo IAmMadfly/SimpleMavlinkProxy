@@ -13,9 +13,20 @@ fn main() {
     println!("Hello, world!");
 
     let devices = rusb::devices().unwrap();
-
+    println!("Devices Found:");
     for device in devices.iter() {
-        println!("Device address: {}", device.address());
+        let device_desc;
+
+        if let Ok(potential_device_desc) = device.device_descriptor() {
+            device_desc = potential_device_desc;
+        } else {
+            continue;
+        }
+
+        let prod_id = device_desc.product_id();
+        let vend_id = device_desc.vendor_id();
+
+        println!("\tDevice id: {}:{}", vend_id, prod_id);
     }
 
     let args =  App::new("Simple Proxy")
