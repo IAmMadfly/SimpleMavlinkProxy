@@ -1,6 +1,5 @@
-use std::{borrow::Borrow, net};
 
-extern crate serialport;
+extern crate rusb;
 extern crate mavlink;
 extern crate clap;
 use clap::{
@@ -13,11 +12,10 @@ mod connections;
 fn main() {
     println!("Hello, world!");
 
-    let ports = serialport::available_ports().unwrap();
+    let devices = rusb::devices().unwrap();
 
-    println!("Port count: {}", ports.iter().count());
-    for port in ports {
-        println!("Port: {}", port.port_name);
+    for device in devices.iter() {
+        println!("Device address: {}", device.address());
     }
 
     let args =  App::new("Simple Proxy")
