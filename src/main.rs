@@ -1,5 +1,6 @@
 use std::{borrow::Borrow, net};
 
+extern crate serialport;
 extern crate mavlink;
 extern crate clap;
 use clap::{
@@ -7,10 +8,17 @@ use clap::{
     Arg
 };
 
-use crate::connection_builder;
+mod connections;
 
 fn main() {
     println!("Hello, world!");
+
+    let ports = serialport::available_ports().unwrap();
+
+    println!("Port count: {}", ports.iter().count());
+    for port in ports {
+        println!("Port: {}", port.port_name);
+    }
 
     let args =  App::new("Simple Proxy")
                         .author("Karl Runge, karl.spartacus@gmail.com")
