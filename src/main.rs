@@ -1,11 +1,9 @@
+use connections::connection::Connection;
+
 
 extern crate rusb;
 extern crate mavlink;
 extern crate clap;
-use clap::{
-    App,
-    Arg
-};
 
 mod connections;
 
@@ -29,19 +27,19 @@ fn main() {
         println!("\tDevice id: {}:{}", vend_id, prod_id);
     }
 
-    let args =  App::new("Simple Proxy")
+    let args =  clap::App::new("Simple Proxy")
                         .author("Karl Runge, karl.spartacus@gmail.com")
                         .version("0.1.0")
                         .about("Simple proxy, with ability to record Mavlink messages to a file if required")
                         .arg(
-                            Arg::with_name("Ports")
+                            clap::Arg::with_name("Ports")
                                 .short("p")
                                 .long("ports")
                                 .help("Sets what inputs should be considered to proxy to each other")
                                 .required(true)
                                 .takes_value(true)
                         ).arg(
-                            Arg::with_name("Logging")
+                            clap::Arg::with_name("Logging")
                                 .short("l")
                                 .long("logging")
                                 .help("Sets if logging will be used to record all messages passed")
@@ -62,12 +60,16 @@ fn main() {
         }
         let port_info_vec: Vec<&str> = port_info.collect();
 
+        let new_connection;
+
         match port_info_vec[0] {
             "tcpin" => println!("TCP Server!"),
             "tcpout" => println!("TCP Connection!"),
-            "udp" => println!("UDP Connection!"),
+            "udp" => {
+                
+                new_connection = connections::udp::UdpConnection::start(port_info_vec[1])
+            },
             _ => println!("Unexpected port type!")
         }
     }
-
 }

@@ -1,12 +1,16 @@
 use std::net;
 
-use net::TcpStream;
+use net::{TcpListener, TcpStream};
 
 use super::connection;
 
 struct TcpClient {
     socket:     net::TcpStream
 }
+
+// struct TcpServer {
+//     socket:     net::TcpListener
+// }
 
 impl connection::Connection for TcpClient {
 
@@ -32,3 +36,4 @@ impl connection::Connection for TcpClient {
     }
 
 }
+
