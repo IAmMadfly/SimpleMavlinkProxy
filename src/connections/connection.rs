@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fmt;
-use std::io::Read;
 
 #[derive(Debug)]
 pub struct ConnectionError {}
@@ -24,10 +23,10 @@ impl ConnectionError {
 }
 
 pub trait Connection {
-    fn start(address_info: &str) -> Result<Box<Self>, ConnectionError>;
+    fn start(address_info: &str) -> std::io::Result<Box<Self>>;
 
-    fn write(&self);
+    fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize>;
 
-    fn read(&self);
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize>;
 }
 

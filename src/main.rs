@@ -1,4 +1,5 @@
 use connections::connection::Connection;
+use rusb::{Device, GlobalContext};
 
 
 extern crate rusb;
@@ -7,26 +8,24 @@ extern crate clap;
 
 mod connections;
 
-fn main() {
-    println!("Hello, world!");
 
+fn get_devices() -> Vec<Device<GlobalContext>> {
     let devices = rusb::devices().unwrap();
-    println!("Devices Found:");
-    for device in devices.iter() {
-        let device_desc;
+    let mut vec_devices = Vec::new();
 
-        if let Ok(potential_device_desc) = device.device_descriptor() {
-            device_desc = potential_device_desc;
+    for device in devices.iter() {
+
+        if let Ok(_) = device.device_descriptor() {
+            vec_devices.push(device);
         } else {
             continue;
         }
-
-        let prod_id = device_desc.product_id();
-        let vend_id = device_desc.vendor_id();
-
-        println!("\tDevice id: {}:{}", vend_id, prod_id);
     }
 
+    vec_devices
+}
+
+fn main() {
     let args =  clap::App::new("Simple Proxy")
                         .author("Karl Runge, karl.spartacus@gmail.com")
                         .version("0.1.0")
@@ -44,6 +43,8 @@ fn main() {
                                 .long("logging")
                                 .help("Sets if logging will be used to record all messages passed")
                         ).get_matches();
+    
+    let _devices = get_devices();
 
     let ports: Vec<&str> = args
         .value_of("Ports")

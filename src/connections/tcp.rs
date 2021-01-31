@@ -1,39 +1,62 @@
-use std::net;
+use std::{io::{Read, Write}, net, thread};
 
 use net::{TcpListener, TcpStream};
 
 use super::connection;
 
 struct TcpClient {
-    socket:     net::TcpStream
+    socket:         net::TcpStream
 }
 
-// struct TcpServer {
-//     socket:     net::TcpListener
-// }
+struct TcpServer {
+    listener:       net::TcpListener,
+    client:         net::TcpStream
+}
 
 impl connection::Connection for TcpClient {
 
-    fn start(address_info: &str) -> Result<Box<Self>, connection::ConnectionError> {
+    fn start(address_info: &str) -> std::io::Result<Box<Self>> {
         let stream_result = TcpStream::connect(address_info);
 
-        if let Ok(tcp_stream) = stream_result {
-            let client = TcpClient {
-                socket:     tcp_stream
-            };
-            return Ok(Box::new(client));
-        } else {
-            return Err(connection::ConnectionError::new());
+        match stream_result {
+            Ok(tcp_stream) => {
+                return Ok(Box::new(
+                    TcpClient {
+                        socket: tcp_stream
+                    }
+                ));
+            },
+            Err(er) => {
+                return Err(er);
+            }
         }
     }
 
-    fn read(&self) {
-        
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        self.socket.read(buffer)
     }
 
-    fn write(&self) {
-
+    fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize> {
+        self.socket.write(buffer)
     }
 
+}
+
+impl connection::Connection for TcpServer {
+
+    fn start(address_info: &str) -> std::io::Result<Box<Self>> {
+        let listener = TcpListener::bind(address_info)?;
+
+        thread::spawn(move || {
+            match listener.accept() {
+                Ok((sock, addr)) => {
+                    self.client = sock;
+                },
+                Err(er) => {
+
+                }
+            }
+        });
+    }
 }
 
