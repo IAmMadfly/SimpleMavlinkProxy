@@ -1,4 +1,9 @@
-use std::{io::{Read, Write}, net, thread};
+use std::{
+    io::{Read, Write}, 
+    net, 
+    thread,
+    sync
+};
 
 use net::{TcpListener, TcpStream};
 
@@ -10,21 +15,25 @@ struct TcpClient {
 
 struct TcpServer {
     listener:       net::TcpListener,
-    client:         net::TcpStream
+    client:         Option<net::TcpStream>
 }
 
 impl connection::Connection for TcpClient {
 
-    fn start(address_info: &str) -> std::io::Result<Box<Self>> {
+    fn start(address_info: &str) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
         let stream_result = TcpStream::connect(address_info);
 
         match stream_result {
             Ok(tcp_stream) => {
-                return Ok(Box::new(
-                    TcpClient {
-                        socket: tcp_stream
-                    }
-                ));
+                return Ok(
+                    sync::Arc::new(
+                        sync::Mutex::new(
+                            TcpClient {
+                                socket: tcp_stream
+                            }
+                        )
+                    )
+                );
             },
             Err(er) => {
                 return Err(er);
@@ -44,19 +53,39 @@ impl connection::Connection for TcpClient {
 
 impl connection::Connection for TcpServer {
 
-    fn start(address_info: &str) -> std::io::Result<Box<Self>> {
-        let listener = TcpListener::bind(address_info)?;
+    fn start(address_info: &str) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
+        let mut server = sync::Arc::new(
+            sync::Mutex::new(
+                TcpServer {
+                    listener:   TcpListener::bind(address_info)?,
+                    client:     None
+                }
+            )
+        );
+
+        let mut server_thread = sync::Arc::clone(&server);
 
         thread::spawn(move || {
-            match listener.accept() {
+            let mut locked_server = server_thread.lock().unwrap();
+            match locked_server.listener.accept() {
                 Ok((sock, addr)) => {
-                    self.client = sock;
+                    locked_server.client = Some(sock);
                 },
                 Err(er) => {
 
                 }
             }
         });
+
+        return Ok(server);
+    }
+
+    fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize> {
+        todo!()
+    }
+
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        todo!()
     }
 }
 

@@ -1,5 +1,8 @@
-use std::error::Error;
-use std::fmt;
+use std::{
+    error::Error,
+    fmt,
+    sync
+};
 
 #[derive(Debug)]
 pub struct ConnectionError {}
@@ -23,7 +26,7 @@ impl ConnectionError {
 }
 
 pub trait Connection {
-    fn start(address_info: &str) -> std::io::Result<Box<Self>>;
+    fn start(address_info: &str) -> std::io::Result<sync::Arc<sync::Mutex<Self>>>;
 
     fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize>;
 
