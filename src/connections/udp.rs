@@ -1,7 +1,7 @@
 use std::net;
 use std::sync;
 
-use connection::{Connection, ConnectionError};
+use connection::{Connection};
 
 use super::connection;
 
@@ -12,7 +12,7 @@ pub struct UdpConnection {
 
 impl Connection for UdpConnection {
 
-    fn start(address_info: &str) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
+    fn start(address_info: String) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
         let stream_result = net::UdpSocket::bind(address_info);
 
         match stream_result {

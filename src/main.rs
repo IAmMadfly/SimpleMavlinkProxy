@@ -40,12 +40,17 @@ fn main() {
                         ).arg(
                             clap::Arg::with_name("Logging")
                                 .short("l")
-                                .long("logging")
+                                .long("log")
                                 .help("Sets if logging will be used to record all messages passed")
+                        ).arg(
+                            clap::Arg::with_name("Debugging")
+                                .short("d")
+                                .long("debug")
+                                .help("Adds additional printouts for debugging information")
                         ).get_matches();
     
     let _devices = get_devices();
-    let connections = Vec::new();
+    let mut connections = Vec::new();
 
     let ports: Vec<&str> = args
         .value_of("Ports")
@@ -54,7 +59,6 @@ fn main() {
         .collect();
 
     for port in ports {
-        println!("Port: {}", port);
         let port_info = port.split(":");
         if port_info.clone().count() != (3 as usize) {
             println!("Invalid port given! Port: {}", port);
@@ -62,12 +66,19 @@ fn main() {
         }
         let port_info_vec: Vec<&str> = port_info.collect();
 
+        let mut connection_info = port_info_vec.clone();
+        connection_info.remove(0);
+
+        let connection_info = connection_info.join(":");
+        println!("Port: {}, Connection info: {}", port, connection_info);
+
         match port_info_vec[0] {
             "tcpin" => println!("TCP Server!"),
             "tcpout" => println!("TCP Connection!"),
             "udp" => {
+                
                 let new_connection = connections::udp::UdpConnection::start(
-                    port_info_vec[1]
+                    connection_info
                 );
                 if let Ok(conn) = new_connection {
                     connections.push(conn);
@@ -75,6 +86,29 @@ fn main() {
 
             },
             _ => println!("Unexpected port type!")
+        }
+    }
+
+    loop {
+        let mut buffer = [0u8; 1024];
+        for conn in &connections {
+            let res = conn.lock().unwrap().read(&mut buffer);
+            
+            match res {
+                Ok(size) => {
+                    let data: Vec<u8> = {
+                        let mut vec = Vec::with_capacity(size);
+                        for i in 0..size {
+                            vec.push(buffer[i]);
+                        }
+                        vec
+                    };
+                    println!("Read: {}, Data: {}", size, String::from_utf8(data).unwrap());
+                },
+                Err(er) => {
+                    println!("Failed to get data: {}", er);
+                }
+            }
         }
     }
 }

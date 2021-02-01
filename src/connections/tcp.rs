@@ -20,7 +20,7 @@ struct TcpServer {
 
 impl connection::Connection for TcpClient {
 
-    fn start(address_info: &str) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
+    fn start(address_info: String) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
         let stream_result = TcpStream::connect(address_info);
 
         match stream_result {
@@ -53,7 +53,7 @@ impl connection::Connection for TcpClient {
 
 impl connection::Connection for TcpServer {
 
-    fn start(address_info: &str) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
+    fn start(address_info: String) -> std::io::Result<sync::Arc<sync::Mutex<Self>>> {
         let mut server = sync::Arc::new(
             sync::Mutex::new(
                 TcpServer {
