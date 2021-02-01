@@ -45,6 +45,7 @@ fn main() {
                         ).get_matches();
     
     let _devices = get_devices();
+    let connections = Vec::new();
 
     let ports: Vec<&str> = args
         .value_of("Ports")
@@ -61,14 +62,17 @@ fn main() {
         }
         let port_info_vec: Vec<&str> = port_info.collect();
 
-        let new_connection;
-
         match port_info_vec[0] {
             "tcpin" => println!("TCP Server!"),
             "tcpout" => println!("TCP Connection!"),
             "udp" => {
-                
-                new_connection = connections::udp::UdpConnection::start(port_info_vec[1])
+                let new_connection = connections::udp::UdpConnection::start(
+                    port_info_vec[1]
+                );
+                if let Ok(conn) = new_connection {
+                    connections.push(conn);
+                }
+
             },
             _ => println!("Unexpected port type!")
         }
