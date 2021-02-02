@@ -1,0 +1,12 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "Test the rust application on connection to the services in this scripy",
+  "main": "test.js",
+  "scripts": {
+    "start": "node test/test.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Karl Runge",
+  "license": "ISC"
+}
